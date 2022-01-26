@@ -7,7 +7,9 @@
     "build": "react-scripts build",
     "spj": "npx sort-package-json@1.48 package.json",
     "dev": "react-scripts start",
-    "stylelint": "stylelint 'src/*.{js,jsx}'"
+    "stylelint": "stylelint 'src/*.{js,jsx}'",
+    "dev-server": "nodemon server.js",
+    "server": "node server.js"
   },
   "dependencies": {
     "@emotion/react": "^11.7.1",
@@ -25,6 +27,7 @@
     "eslint-plugin-react": "^7.25.2",
     "eslint-plugin-react-hooks": "^4.2.0",
     "postcss-pseudo-classes": "^0.2.1",
+    "nodemon": "^2.0.15",
     "postcss-syntax": "^0.36.2",
     "prettier": "^2.5.1",
     "react-scripts": "5.0.0",
