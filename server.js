@@ -1,4 +1,5 @@
 import express from "express"
+import cors from "cors"
 import {writeFile, readFile} from "fs/promises"
 import {v4 as uuid} from "uuid";
 
@@ -6,6 +7,7 @@ const app = express();
 const port = 3313
 
 app.use(express.json())
+app.use(cors)
 
 app.listen(port, () => {
 	console.log("He is listening")
