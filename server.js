@@ -1,18 +1,21 @@
 import express from "express"
 import cors from "cors"
+import dotenv from "dotenv"
+dotenv.config()
+
 import {writeFile, readFile} from "fs/promises"
 import {v4 as uuid} from "uuid";
+import {connectDatabase} from "./utils/database.js";
 
 const app = express();
 const port = 3313
 
 app.use(express.json())
-app.use(cors)
+app.use(cors())
 
-app.listen(port, () => {
-	console.log("He is listening")
-})
-
+if (!process.env.MONGODB_URI) {
+	throw new Error("No URI variable in dotenv")
+}
 
 
 // Hello World
@@ -63,6 +66,16 @@ app.delete("/api/todos", async (request, response) => {
 	await writeFile(DATABASE_URI, JSON.stringify(json, null, 4))
 	response.status(201)
 })
+
+
+
+
+connectDatabase(process.env.MONGODB_URI)
+	.then(() => {
+		app.listen(port, () => {
+			console.log("He is listening")
+		})
+	})
 
 
 /*app.put("/api/todos", async (request, response) => {
