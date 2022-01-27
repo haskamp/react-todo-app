@@ -5,7 +5,7 @@ dotenv.config()
 
 import {writeFile, readFile} from "fs/promises"
 import {v4 as uuid} from "uuid";
-import {connectDatabase} from "./utils/database.js";
+import {connectDatabase, getTodoCollection} from "./utils/database.js";
 
 const app = express();
 const port = 3313
@@ -17,7 +17,6 @@ if (!process.env.MONGODB_URI) {
 	throw new Error("No URI variable in dotenv")
 }
 
-
 // Hello World
 app.get("/", (request, response) => {
 	response.send("Hello World!")
@@ -27,28 +26,27 @@ const DATABASE_URI = "./database/database.json"
 
 // Database abfrage
 app.get("/api/todos", async (request, response) => {
-	const data = await readFile(DATABASE_URI, "utf8")
-	const json = JSON.parse(data)
-	console.log(json)
+	// Get data from DB
+	const collection = getTodoCollection();
+	// Parse data
+
+	// unfertig get methode
 	response.json(json.todos)
 })
 
 // ToDos auf datenbank speichern
 app.post("/api/todos",  async (request, response) => {
 	// get data from db
-	const data = await readFile(DATABASE_URI, "utf8")
-	const json = JSON.parse(data)
+	const collection = getTodoCollection();
 	// Create new to do
 	const todo = {
 		name: "clean Kitchen",
-		done: false,
-		id: uuid(),
+		isDone: false,
 	};
 	// Add to-do
-	json.todos.push(todo);
+	const mongodbResponse = await collection.insertOne(todo)
 	// save changes to database
-	await writeFile(DATABASE_URI, JSON.stringify(json, null, 4))
-	response.status(201)
+	response.status(201).send(`Insertion successful, Added ID ${mongodbResponse.insertedId}`)
 });
 
 
@@ -97,15 +95,23 @@ connectDatabase(process.env.MONGODB_URI)
 });*/
 
 
-/*
 
-app.get("/", (request, response) => {
-	response.send("Handle GET request")
-})
+/*// ToDos auf datenbank speichern
+app.post("/api/todos",  async (request, response) => {
+	// get data from db
+	const data = await readFile(DATABASE_URI, "utf8")
+	const json = JSON.parse(data)
+	// Create new to do
+	const todo = {
+		name: "clean Kitchen",
+		done: false,
+		id: uuid(),
+	};
+	// Add to-do
+	json.todos.push(todo);
+	// save changes to database
+	await writeFile(DATABASE_URI, JSON.stringify(json, null, 4))
+	response.status(201)
+});*/
 
-app.put("/", (request, response) => {
-	response.send("Handle PUT request")
-})
-
-*/
 
