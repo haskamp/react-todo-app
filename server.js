@@ -6,6 +6,8 @@ dotenv.config()
 import {writeFile, readFile} from "fs/promises"
 import {v4 as uuid} from "uuid";
 import {connectDatabase, getTodoCollection} from "./utils/database.js";
+import mongoose from "mongoose"
+import Todo from "./models/todo.models.js"
 
 const app = express();
 const port = 3313
@@ -17,40 +19,69 @@ if (!process.env.MONGODB_URI) {
 	throw new Error("No URI variable in dotenv")
 }
 
-// Hello World
-app.get("/", (request, response) => {
-	response.send("Hello World!")
+// GET Endpoint
+app.get("/api/todos", async (request, response) => {
+	try {
+		// Find and display data
+		const id = {_id: "61f28602671cee53e048412d"};
+		const mongodbResponse = await Todo.find({ id })
+		console.log(mongodbResponse)
+		response.status(201).json(mongodbResponse)
+	} catch (err) {
+		next(err)
+	}
+
 })
 
-const DATABASE_URI = "./database/database.json"
-
-// Database abfrage
-app.get("/api/todos", async (request, response) => {
-	// Get data from DB
-	const collection = getTodoCollection();
-	// Parse data
-
-	// unfertig get methode
-	response.json(json.todos)
+app.put("/api/todos", async (request, response) => {
+	// kein data load from DB
+	// Update Model data entry in DB
+	const id = {_id: "61f28602671cee53e048412d"};
+	const mongodbResponse = await Todo.findByIdAndUpdate(id, {isDone: true}, {returnDocument: "after"})
+	// response handling
+	response.status(202).json(mongodbResponse)
 })
 
 // ToDos auf datenbank speichern
 app.post("/api/todos",  async (request, response) => {
-	// get data from db
-	const collection = getTodoCollection();
 	// Create new to do
-	const todo = {
+	const todo = new Todo({
 		name: "clean Kitchen",
 		isDone: false,
-	};
+	});
 	// Add to-do
-	const mongodbResponse = await collection.insertOne(todo)
+	const mongodbResponse = await todo.save()
 	// save changes to database
-	response.status(201).send(`Insertion successful, Added ID ${mongodbResponse.insertedId}`)
+	response
+		.status(201)
+		.json(mongodbResponse)
+		.send(`Insertion successful`)
 });
 
+app.delete("api/todos:id", async (request, response) => {
+	try {
+		//
+		const {id: todoID} = request.params
+			// find and delete by ID
+		const mongodbResponse = await Todo.findByIdAndDelete(todoID)
+		// Save change
+		response.status(200).json(mongodbResponse)
+	}
+	catch (err) {
+		response.status(404).send(err)
+	}
+})
 
-// Delete last to do?
+
+mongoose.connect(process.env.MONGODB_URI)
+	.then(() => {
+		app.listen(port, () => {
+			console.log("He is listening")
+		})
+	})
+
+
+/*// Delete last to do?
 app.delete("/api/todos", async (request, response) => {
 	// get data from db
 	const data = await readFile(DATABASE_URI, "utf8")
@@ -63,17 +94,22 @@ app.delete("/api/todos", async (request, response) => {
 	// save changes to database
 	await writeFile(DATABASE_URI, JSON.stringify(json, null, 4))
 	response.status(201)
-})
+})*/
 
 
+/*
+const DATABASE_URI = "./database/database.json"
 
+// Database abfrage
+app.get("/api/todos", async (request, response) => {
+	// Get data from DB
+	const collection = getTodoCollection();
+	// Parse data
 
-connectDatabase(process.env.MONGODB_URI)
-	.then(() => {
-		app.listen(port, () => {
-			console.log("He is listening")
-		})
-	})
+	// unfertig get methode
+	response.json(json.todos)
+})*/
+
 
 
 /*app.put("/api/todos", async (request, response) => {
@@ -114,4 +150,21 @@ app.post("/api/todos",  async (request, response) => {
 	response.status(201)
 });*/
 
+/*
+// ToDos auf datenbank speichern mongoDB
+app.post("/api/todos",  async (request, response) => {
+	// get data from db
+	const collection = getTodoCollection();
+	// Create new to do
+	const todo = {
+		name: "clean Kitchen",
+		isDone: false,
+	};
+	// Add to-do
+	const mongodbResponse = await collection.insertOne(todo)
+	// save changes to database
+	response.status(201).send(`Insertion successful, Added ID ${mongodbResponse.insertedId}`)
+});
 
+
+*/
